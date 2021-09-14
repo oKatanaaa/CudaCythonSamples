@@ -1,5 +1,5 @@
 cimport cython
-
+cimport numpy as cnp
 from cython.parallel cimport prange
 
 
@@ -7,7 +7,7 @@ cdef extern from "cuda/dotproduct.h":
 	float dotproduct(float *a, float *b, int n)
 
 
-def cuda_dotproduct(float[:] a, float[:] b):
+def cuda_dotproduct(cnp.ndarray[float, ndim=1] a, cnp.ndarray[float, ndim=1] b):
 	cdef int n = a.shape[0]
 	return dotproduct(&a[0], &b[0], n)
 
@@ -22,5 +22,6 @@ def cpu_dotproduct(float[:] a, float[:] b, int n_threads):
 		float result = 0.0
 
 	for i in prange(a.shape[0], schedule='static', nogil=True, num_threads=n_threads):
+
 		result += a[i] * b[i]
 	return result

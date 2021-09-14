@@ -1,21 +1,26 @@
 cimport cython
+
 from cython.parallel cimport prange
 
 
 cdef extern from "cuda/dotproduct.h":
-	void vec_add(float *a, float *b, float *out, int n)
+	float dotproduct(float *a, float *b, int n)
 
 
-def cuda_add(float[:] a, float[:] b, float[:] c):
+def cuda_dotproduct(float[:] a, float[:] b):
 	cdef int n = a.shape[0]
-	vec_add(&a[0], &b[0], &c[0], n)
+	return dotproduct(&a[0], &b[0], n)
 
 
 # Turn off all the smart checks for performance sake
 @cython.overflowcheck(False)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cpu_add(float[:] a, float[:] b, float[:] c, int n_threads):
-	cdef int i
+def cpu_dotproduct(float[:] a, float[:] b, int n_threads):
+	cdef:
+		int i
+		float result = 0.0
+
 	for i in prange(a.shape[0], schedule='static', nogil=True, num_threads=n_threads):
-		c[i] = a[i] + b[i]
+		result += a[i] * b[i]
+	return result

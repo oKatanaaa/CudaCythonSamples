@@ -23,6 +23,11 @@ void gpu_matmul(float *a, float *b, float *out, int a_dim1, int a_dim2, int b_di
             CUDA_CHECK(cudaFree(DEV_B));
             CUDA_CHECK(cudaFree(DEV_C));
         }
+        printf("Allocating memory on GPU. Old A_DIM1=%d, A_DIM2=%d, B_DIM2=%d \n", A_DIM1, A_DIM1, B_DIM2);
+        A_DIM1 = a_dim1;
+        A_DIM2 = a_dim2;
+        B_DIM2 = b_dim2;
+        printf("New A_DIM1=%d, A_DIM2=%d, B_DIM2=%d \n", A_DIM1, A_DIM1, B_DIM2);
         DEV_A = allocate_floatmat_device(a_dim1, a_dim2);
         DEV_B = allocate_floatmat_device(a_dim2, b_dim2);
         DEV_C = allocate_floatmat_device(a_dim1, b_dim2);

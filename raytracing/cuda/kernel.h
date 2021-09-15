@@ -1,1 +1,1 @@
-float dotproduct(float *a, float *b, int n);
+void trace_spheres(unsigned char *img, int w, int h);

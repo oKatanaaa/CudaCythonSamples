@@ -1,4 +1,12 @@
+#ifndef CYTHON_CUDA_SAMPLES_COMMON_H
+#define CYTHON_CUDA_SAMPLES_COMMON_H
+
+#include <cuda.h>
 #include <iostream>
+
+
+#define rnd(x) (x * rand() / RAND_MAX)
+
 
 void CUDA_CHECK(cudaError_t call_resp) {
     const cudaError_t error = call_resp;
@@ -9,3 +17,5 @@ void CUDA_CHECK(cudaError_t call_resp) {
                 cudaGetErrorString(error));
     }
 }
+
+#endif

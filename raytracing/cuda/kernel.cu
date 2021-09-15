@@ -1,78 +1,70 @@
 #include <math.h>
-#include <common.h>
+#include "common.h"
+#include "sphere.cu"
 
 
 const int THREADS_PER_BLOCK = 256;
+const int N_SPHERES = 32;
+__constant__ Sphere DEV_SPHERES[N_SPHERES];
 
-
-__global__ void cudaDotProduct(float *x,  float *y, float *out, int n)
+__global__ void cudaRayTracing(unsigned char *img, int w, int h)
 {
-    // Shared among all threads within a single block.
-    __shared__ float cache[THREADS_PER_BLOCK];
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    int cacheIndex = threadIdx.x;
-    out[tid] = x[tid] + y[tid];
-    if (tid < n) {
-        cache[cacheIndex] = x[tid] * y[tid];
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    if (x > w || y > h) {
+        return;
     }
+    int img_offset = x + y * blockDim.x * gridDim.x;
 
-    // Perform reduction of values stored in the cache.
-    // Complexity: O(log2(n))
-    int offset = blockDim.x / 2;
-    while (offset != 0) {
-        if (cacheIndex < offset) {
-            cache[cacheIndex] += cache[cacheIndex + offset];
+    float ox = (x - w / 2);
+    float oy = (y - h / 2);
+    // Red, Blue, Green
+    float r = 0.0, g = 0.0, b = 0.0;
+    float max_dist = -INF;
+
+    // Determine which object is hit by the ray and get its color
+    for (int i = 0; i < N_SPHERES; i++) {
+        float intensity;
+        float dist = DEV_SPHERES[i].hit(ox, oy, &intensity);
+        if (dist > max_dist) {
+            r = DEV_SPHERES[i].r * intensity;
+            g = DEV_SPHERES[i].g * intensity;
+            b = DEV_SPHERES[i].b * intensity;
         }
-        // Make sure that every thread has finished writing into the cache.
-        __syncthreads();
-        offset /= 2;
     }
 
-    // Store the reduction result in the global output array.
-    if (cacheIndex == 0) {
-        out[blockIdx.x] = cache[0];
-    }
+    // Save the color data
+    img[img_offset * 3 + 0] = (int) (r * 255);
+    img[img_offset * 3 + 1] = (int) (g * 255);
+    img[img_offset * 3 + 2] = (int) (b * 255);
 }
 
 
-float *DEV_A = NULL, *DEV_B = NULL, *DEV_OUT = NULL;
-float *HOST_OUT = NULL;
+unsigned char *DEV_IMG = NULL;
 int current_n_bytes = -1;
 
 
-float dotproduct(float *a, float *b, int n) {
-    int n_blocks = (n + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    int n_bytes = n * sizeof(float);
-    int n_bytes_out = n_blocks * sizeof(float);
+void trace_spheres(unsigned char *img, int w, int h) {
+    int n_bytes = w * h * 3 * sizeof(unsigned char);
     // Allocate memory on GPU if needed
     if (current_n_bytes != n_bytes) {
         // Free already the allocated memory if it actually was
-        if (DEV_A != NULL || DEV_B != NULL || DEV_OUT != NULL) {
-            CUDA_CHECK(cudaFree(DEV_A));
-            CUDA_CHECK(cudaFree(DEV_B));
-            CUDA_CHECK(cudaFree(DEV_OUT));
-            delete[] HOST_OUT;
+        if (DEV_IMG != NULL) {
+            CUDA_CHECK(cudaFree(DEV_IMG));
         }
-        CUDA_CHECK(cudaMalloc(&DEV_A, n_bytes));
-        CUDA_CHECK(cudaMalloc(&DEV_B, n_bytes));
-        CUDA_CHECK(cudaMalloc(&DEV_OUT, n_bytes_out));
-        // Allocate memory for the output
-        HOST_OUT = new float[n_blocks];
-
+        CUDA_CHECK(cudaMalloc(&DEV_IMG, n_bytes));
     }
 
-    // Run the dotproduct
-    CUDA_CHECK(cudaMemcpy(DEV_A, a, n_bytes, cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(DEV_B, b, n_bytes, cudaMemcpyHostToDevice));
-    cudaDotProduct<<<n_blocks, THREADS_PER_BLOCK>>>(DEV_A, DEV_B, DEV_OUT, n);
+    // Generate spheres, copy them into the constant memory and free the allocated memory
+    Sphere* spheres = generate_random_spheres(N_SPHERES, w, h);
+    CUDA_CHECK(cudaMemcpyToSymbol(DEV_SPHERES, spheres, sizeof(Sphere) * N_SPHERES));
+    delete[] spheres;
+
+    dim3 grids((w + 16 - 1) / 16, (h + 16 - 1) / 16);
+    dim3 threads(16, 16);
+    // Run the raytracing
+    cudaRayTracing<<<grids, threads>>>(DEV_IMG, w, h);
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaMemcpy(HOST_OUT, DEV_OUT, n_bytes_out, cudaMemcpyDeviceToHost));
-
-    // Perform final reduction
-    float result = 0;
-    for (int i = 0; i < n; i++) {
-        result += HOST_OUT[i];
-    }
-    return result;
+    CUDA_CHECK(cudaMemcpy(img, DEV_IMG, n_bytes, cudaMemcpyDeviceToHost));
 }

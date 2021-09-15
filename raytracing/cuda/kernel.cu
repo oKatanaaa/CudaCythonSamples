@@ -3,9 +3,9 @@
 #include "sphere.cu"
 
 
-const int THREADS_PER_BLOCK = 256;
 const int N_SPHERES = 32;
 __constant__ Sphere DEV_SPHERES[N_SPHERES];
+
 
 __global__ void cudaRayTracing(unsigned char *img, int w, int h)
 {
@@ -52,6 +52,9 @@ void trace_spheres(unsigned char *img, int w, int h) {
         if (DEV_IMG != NULL) {
             CUDA_CHECK(cudaFree(DEV_IMG));
         }
+        printf("Allocating memory on GPU. Old current_n_bytes=%d", current_n_bytes);
+        current_n_bytes = n_bytes;
+        printf("New current_n_bytes=%d", current_n_bytes);
         CUDA_CHECK(cudaMalloc(&DEV_IMG, n_bytes));
     }
 

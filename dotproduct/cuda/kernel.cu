@@ -53,12 +53,14 @@ float dotproduct(float *a, float *b, int n) {
             CUDA_CHECK(cudaFree(DEV_OUT));
             delete[] HOST_OUT;
         }
+        printf("Allocating memory on GPU. Old current_n_bytes=%d", current_n_bytes);
+        current_n_bytes = n_bytes;
+        printf("New current_n_bytes=%d", current_n_bytes);
         CUDA_CHECK(cudaMalloc(&DEV_A, n_bytes));
         CUDA_CHECK(cudaMalloc(&DEV_B, n_bytes));
         CUDA_CHECK(cudaMalloc(&DEV_OUT, n_bytes_out));
         // Allocate memory for the output
         HOST_OUT = new float[n_blocks];
-
     }
 
     // Run the dotproduct

@@ -27,6 +27,9 @@ void vec_add(float *a, float *b, float *out, int n) {
             CUDA_CHECK(cudaFree(dev_b));
             CUDA_CHECK(cudaFree(dev_out));
         }
+        printf("Allocating memory on GPU. Old current_n_bytes=%d", current_n_bytes);
+        current_n_bytes = n_bytes;
+        printf("New current_n_bytes=%d", current_n_bytes);
         CUDA_CHECK(cudaMalloc(&dev_a, n_bytes));
         CUDA_CHECK(cudaMalloc(&dev_b, n_bytes));
         CUDA_CHECK(cudaMalloc(&dev_out, n_bytes));

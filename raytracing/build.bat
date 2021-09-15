@@ -1,4 +1,4 @@
-del lib/dotproduct.lib
+del lib/*.lib
 del cudaext*
 rmdir /s /q build
 

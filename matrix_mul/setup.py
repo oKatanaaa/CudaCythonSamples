@@ -56,7 +56,7 @@ ic(CUDA)
 
 ext = Extension('cudaext',
                 sources=['wrapper.pyx'],
-                libraries=['lib\\matmul', 'cudart', 'cublas'],  # , os.path.join(CUDA['lib64'], 'cudart')],
+                libraries=['lib/kernel', 'cudart', 'cublas'],  # , os.path.join(CUDA['lib64'], 'cudart')],
                 language='c++',
                 include_dirs=[CUDA['include']],
                 library_dirs=[CUDA['lib64']],

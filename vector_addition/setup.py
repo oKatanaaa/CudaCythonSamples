@@ -56,7 +56,7 @@ ic(CUDA)
 
 ext = Extension('cudaext',
                 sources=['wrapper.pyx'],
-                libraries=['lib\\vecadd', 'cudart'],
+                libraries=['lib/kernel', 'cudart'],
                 language='c++',
                 include_dirs=[CUDA['include']],
                 library_dirs=[CUDA['lib64']],

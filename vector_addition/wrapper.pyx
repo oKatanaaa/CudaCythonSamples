@@ -2,7 +2,7 @@ cimport cython
 from cython.parallel cimport prange
 
 
-cdef extern from "cuda/dotproduct.h":
+cdef extern from "cuda/kernel.h":
 	void vec_add(float *a, float *b, float *out, int n)
 
 

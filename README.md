@@ -5,9 +5,14 @@ The solutions contain code samples with Cython + CUDA showing how to
 generate CUDA capable python extensions.
 
 The repository is organized as follows:
-- Lab1: matrix_mul
+- vector_addiction (Lab1)
+  - The most basic example of CUDA.
+- matrix_mul (Lab2)
   - Uses CUBLAS for matrix multiplication.
-- Lab2: to be added...
+- dotproduct
+  - Uses shared memory for partial reduction.
+- raytracing
+  - Uses constant memory for accelerating the access to a list of objects that never changes.
 
 ## Tested hardware
 

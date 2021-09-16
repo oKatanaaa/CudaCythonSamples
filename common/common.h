@@ -1,6 +1,6 @@
 #ifndef CYTHON_CUDA_SAMPLES_COMMON_H
 #define CYTHON_CUDA_SAMPLES_COMMON_H
-
+#include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <iostream>
 
@@ -8,8 +8,7 @@
 #define rnd(x) (x * rand() / RAND_MAX)
 
 
-void CUDA_CHECK(cudaError_t call_resp) {
-    const cudaError_t error = call_resp;
+inline void CUDA_CHECK(cudaError_t error) {
     if (error != cudaSuccess)
     {
         fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);

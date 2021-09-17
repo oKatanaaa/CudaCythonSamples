@@ -5,8 +5,10 @@ cdef extern  from "cuda/heat_grid.h":
 	cdef cppclass HeatGrid:
 		int w
 		int h
+		float totalTime
 		# Declare only those member that we will be accessing from Python.
-		unsigned char *heat_img
+		unsigned char 	*heat_img
+		float 			*host_outSrc
 		void init_grid(int w, int h);
 		void init_heaters(float *heat_grid);
 		void destroy_grid();
@@ -21,19 +23,24 @@ cdef extern from "cuda/kernel_runner.h":
 cdef class PyHeatGrid:
 	cdef:
 		HeatGrid* grid
-		unsigned char[:, :] heat_img
+		float[:, :] heat_img
 
-	def __cinit__(self, float[:, :] init_heaters):
-		cdef int h, w
-		h = init_heaters.shape[0]
-		w = init_heaters.shape[1]
+	def __cinit__(self, int w, int h):
 		self.grid = new HeatGrid()
 		self.grid.init_grid(w, h)
+		self.heat_img = <float[:h, :w]>self.grid.host_outSrc
+
+	def init_heaters(self, float[:, :] init_heaters):
 		self.grid.init_heaters(&init_heaters[0, 0])
-		self.heat_img = <unsigned char[:h, :w]>self.grid.heat_img
 
 	def get_heat_image(self):
 		return np.asarray(self.heat_img)
+
+	def totalTime(self):
+		return self.grid.totalTime
+
+	def destroy_grid(self):
+		self.grid.destroy_grid()
 
 
 def cuda_bind_grid(PyHeatGrid grid):

@@ -8,13 +8,18 @@
 #define rnd(x) (x * rand() / RAND_MAX)
 
 
-inline void CUDA_CHECK(cudaError_t error) {
+static void CudaCheck(cudaError_t error, const char *file, int line) {
     if (error != cudaSuccess)
     {
-        fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);
+        fprintf(stderr, "Error: %s:%d, ", file, line);
         fprintf(stderr, "code: %d, reason: %s\n", error,
                 cudaGetErrorString(error));
+        exit( EXIT_FAILURE );
     }
 }
+
+
+#define CUDA_CHECK( err ) (CudaCheck( err, __FILE__, __LINE__ ))
+
 
 #endif

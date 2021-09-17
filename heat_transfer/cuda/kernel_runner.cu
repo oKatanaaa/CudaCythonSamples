@@ -2,12 +2,15 @@
 #include "kernel.cu"
 #include "heat_grid.h"
 
+// Threads per each dimension (x and y)
+const int THREADS_PER_DIM = 16;
 
 void evolve_heat(HeatGrid *grid, float speed, int time_steps) {
-    int x_blocks = (grid->w + 16 - 1) / 16;
-    int y_blocks = (grid->h + 16 - 1) / 16;
+    int x_blocks = (grid->w + THREADS_PER_DIM - 1) / THREADS_PER_DIM;
+    int y_blocks = (grid->h + THREADS_PER_DIM - 1) / THREADS_PER_DIM;
+
     dim3 blocks(x_blocks, y_blocks);
-    dim3 threads(16, 16);
+    dim3 threads(THREADS_PER_DIM, THREADS_PER_DIM);
 
     // Start heat evolution
     CUDA_CHECK(cudaEventRecord(grid->start, 0));
@@ -26,8 +29,7 @@ void evolve_heat(HeatGrid *grid, float speed, int time_steps) {
         blend_kernel<<<blocks, threads>>>(out, dstOut, speed, grid->w, grid->h);
         dstOut = !dstOut;
     }
-    float_to_color<<<blocks, threads>>>(grid->dev_heat_img, grid->dev_inSrc, grid->w, grid->h);
-    CUDA_CHECK(cudaMemcpy(grid->heat_img, grid->dev_heat_img, grid->heat_img_size, cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(grid->host_outSrc, grid->dev_inSrc, grid->float_grid_n_bytes, cudaMemcpyDeviceToHost));
 
     CUDA_CHECK(cudaEventRecord(grid->stop, 0));
     CUDA_CHECK(cudaEventSynchronize(grid->stop));

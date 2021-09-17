@@ -7,12 +7,11 @@ class HeatGrid {
     public:
         int w;
         int h;
-        int heat_img_size;
-        unsigned char   *dev_heat_img;
+        int float_grid_n_bytes;
         float           *dev_inSrc;
         float           *dev_outSrc;
         float           *dev_constSrc;
-        unsigned char   *heat_img;
+        float           *host_outSrc;
 
         cudaEvent_t     start;
         cudaEvent_t     stop;

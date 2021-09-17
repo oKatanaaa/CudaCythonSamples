@@ -7,16 +7,11 @@ void HeatGrid::init_grid(int w_, int h_) {
     w = w_;
     h = h_;
     int n_bytes_float = w * h * sizeof(float);
+    float_grid_n_bytes = n_bytes_float;
     CUDA_CHECK(cudaMalloc((void**)&dev_inSrc, n_bytes_float));
     CUDA_CHECK(cudaMalloc((void**)&dev_outSrc, n_bytes_float));
     CUDA_CHECK(cudaMalloc((void**)&dev_constSrc, n_bytes_float));
-
-    heat_img_size = w * h * sizeof(unsigned char);
-    CUDA_CHECK(cudaMalloc((void**)&dev_heat_img, heat_img_size));
-    heat_img = new unsigned char[w * h];
-    if (heat_img == NULL) {
-        printf("Unable to initialize heat_img.\n");
-    }
+    host_outSrc = new float[w * h];
 
     CUDA_CHECK(cudaEventCreate(&start));
     CUDA_CHECK(cudaEventCreate(&stop));
@@ -27,7 +22,8 @@ void HeatGrid::init_grid(int w_, int h_) {
 }
 
 void HeatGrid::init_heaters(float *heat_grid) {
-    CUDA_CHECK(cudaMemcpy(dev_constSrc, heat_grid, w * h * sizeof(float), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(dev_constSrc, heat_grid, float_grid_n_bytes, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(dev_inSrc, heat_grid, float_grid_n_bytes, cudaMemcpyHostToDevice));
     printf("Successfully initialized dev_constSrc.\n");
 }
 
@@ -38,12 +34,11 @@ void HeatGrid::measure_elapsed_time() {
 }
 
 void HeatGrid::destroy_grid() {
-    CUDA_CHECK(cudaFree(dev_heat_img));
     CUDA_CHECK(cudaFree(dev_inSrc));
     CUDA_CHECK(cudaFree(dev_outSrc));
     CUDA_CHECK(cudaFree(dev_constSrc));
 
-    delete[] heat_img;
+    delete[] host_outSrc;
 }
 
 

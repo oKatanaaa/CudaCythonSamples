@@ -5,14 +5,23 @@ The solutions contain code samples with Cython + CUDA showing how to
 generate CUDA capable python extensions.
 
 The repository is organized as follows:
-- **vector_addiction** (Lab1)
-  - The most basic example of CUDA.
+- **vector_addiction**
+  - A simple CUDA program that adds two vectors.
+      - The most basic example of CUDA.
 - **matrix_mul** (Lab2)
-  - Uses CUBLAS for matrix multiplication.
+  - A simple CUBLAS program that multiplies two square matrices.
+    - Uses CUBLAS for matrix multiplication.
 - **dotproduct**
-  - Uses shared memory for partial reduction.
+  - An implementation of dot product (or scalar product) in CUDA.
+    - Uses shared memory for partial reduction.
 - **raytracing**
-  - Uses constant memory for accelerating the access to a list of objects that never changes.
+  - A very simple implementation of raytracing with randomly generated spheres. No lighting, reflections, etc.
+    - Uses constant memory for accelerating access to a list of objects that never changes.
+- **heat_transfer**
+  - A simple (physically inaccurate) example of heat transfer in a grid.
+    - Uses texture memory for accelerating access to spatially neighboring pixels.
+
+Yes, every code sample here is something simple!
 
 ## How to run the project
 
@@ -28,8 +37,9 @@ Every code sample folder the following structure:
 To run the sample, complete the following steps:
 1. Make sure you have `CUDAHOME` **environment variable** which contains path to the CUDA Toolkit folder. 
    Example: *C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2*.
-2. Run `build.bat`.
-3. Run `test.py`.
+2. Make sure you have installed python packages listed in `requirements.txt`.
+3. Run `build.bat`.
+4. Run `test.py`.
 
 ## Tested hardware
 

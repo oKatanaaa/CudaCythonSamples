@@ -5,7 +5,7 @@ already allocated buffers on GPU if matrices' sizes are the
 same. It was designed this way to make performance tests more "practical" since real
 application won't allocate memory on a GPU every time data is received.
 
-CUBLAS matmul is being compared to other implementations of matmul as well:
+CUBLAS matmul is being compared to other implementations:
 
 - cpu dummy implementation (see `wrapper.pyx`);
 - cpu implementation with optimized memory usage (see `wrapper.pyx`). Columns of the B matrix are

@@ -26,6 +26,6 @@ during test. The time is measured in milliseconds.
 | 1024 | __3.393__ | 5753 | 9.998 | 1695 | 2.947 |
 | 2048 | __13.80__ | - | 75.47 | - | 5.469 |
 
-The results suggest that for most cases Numpy will a "go to" choice. CUDA should be used only in cases when matrices
-larger 512 are used and are being multiplied frequent enough to dampen the overall performance.
+The results suggest that for most cases Numpy will be a "go to" choice. CUDA should be used only in cases when matrices
+larger 512 are used and being multiplied frequent enough to affect performance.
 

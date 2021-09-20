@@ -1,5 +1,6 @@
 cimport cython
 from cython.parallel cimport prange, parallel
+from libc.stdlib cimport malloc, free
 
 
 cdef extern from "cuda/kernel.h":
@@ -15,6 +16,37 @@ def cuda_matmul(float[:, :] a, float[:, :] b, float[:, :] c):
 
 
 # Turn off all the smart checks for performance sake
+@cython.overflowcheck(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def smart_cpu_matmul(float[:, :] a, float[:, :] b, float[:, :] c, int n_threads):
+	"""
+	Memory optimized dummy implementation of matrix multiply in Cython.
+	"""
+	cdef:
+		int i, j, k, jj
+		float sum
+		float *buffer
+
+
+	with nogil, parallel(num_threads=n_threads):
+		buffer = <float*>malloc(b.shape[0] * sizeof(float))
+
+		for j in prange(b.shape[1], schedule='static'):
+			# Copy column data into the buffer to accelerate access
+			# to the corresponding elements.
+			for jj in range(b.shape[0]):
+				buffer[jj] = b[jj, j]
+
+			for i in range(a.shape[0]):
+				sum = 0.0
+				for k in range(a.shape[1]):
+					sum = sum + a[i, k] * buffer[k]
+				c[i, j] = sum
+		# Free the buffer
+		free(<void*>buffer)
+
+
 @cython.overflowcheck(False)
 @cython.boundscheck(False)
 @cython.wraparound(False)

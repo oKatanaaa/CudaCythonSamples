@@ -10,7 +10,7 @@ CUBLAS matmul is being compared to other implementations:
 - cpu dummy implementation (see `wrapper.pyx`);
 - cpu implementation with optimized memory usage (see `wrapper.pyx`). Columns of the B matrix are
 being cached to accelerate access to the corresponding elements. This slight modification results in 3x
-performance boost.
+performance boost. *This implementation is not listed in the table below. Run `test.py` to see the results.*
 - numpy.dot
 
 ## Performance research
